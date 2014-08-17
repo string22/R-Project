@@ -1,0 +1,99 @@
+# Loading and preprocessing the data
+# 1. 
+
+data <- read.csv("C:\\Users\\James\\Desktop\\activity.csv", header = TRUE)
+
+# What is mean total number of steps taken per day?
+# 1.
+
+total <- tapply(data$steps, data$date, sum)
+hist(total)
+
+# 2.
+
+mean1 <- mean(total, na.rm=TRUE)
+mean1
+#mean1 = 10766.19
+median1 <- median(total, na.rm=TRUE)
+median1 
+#median1 = 10765
+
+# What is the average daily activity pattern?
+# 1.
+
+average <- tapply(data$steps, data$interval, mean, na.rm=TRUE)
+names<-names(average)
+plot(names, average, xlab="5 minute intervals", ylab="average number of steps taken", type="l")
+
+# 2.
+max <- max(average)
+max
+#max = 206.1698
+
+# Inputting missing values
+# 1.
+
+sum <- sum(is.na(data$steps))
+sum
+#sum = 2304
+
+# 2.
+#replace all NA with the mean value for that particular 5 minute interval
+
+# 3.
+
+means <- aggregate(data$steps, list(data$interval), mean, na.rm=TRUE)
+names(means) <- c("Interval", "Mean")
+data[is.na(data)] <- "1000" 
+data$steps[data$steps == 1000]<-means$Mean[match(means$Interval, data$interval)]
+
+# 4.
+
+data$steps <- as.numeric(as.character(data$steps))
+total2 <- tapply(data$steps, data$date, sum)
+hist(total2)
+mean2 <- mean(total2)
+mean2
+#mean2 = 10766.19
+median2 <- median(total2)
+median2
+#median2 = 10766.19
+meandifference <- mean2-mean1
+meandifference
+#meandifference = 0
+mediandifference <- median2 - median1
+mediandifference
+#mediandifference = 1.188679 
+
+# Do these values differ from the estimates from the first part of the assignment?
+# The means are the same. The median after inputting missing data is 1.188679 higher.  
+
+# What is the impact of inputing missing data on the estimates of the total
+# daily number of steps?
+# The estimates for the total daily number of steps goes rises for the days where there were
+# NA data. For days when there was no NA data, the total number of steps stays the same. 
+
+# Are there differences in activity patterns between weekdays and weekends?
+# 1.
+
+data$day <- weekdays(as.Date(data$date))
+data$day[data$day == "Saturday"]<- "Weekend"
+data$day[data$day == "Sunday"]<- "Weekend"
+data$day[data$day == "Monday"]<- "Weekday"
+data$day[data$day == "Tuesday"]<- "Weekday"
+data$day[data$day == "Wednesday"]<- "Weekday"
+data$day[data$day == "Thursday"]<- "Weekday"
+data$day[data$day == "Friday"]<- "Weekday"
+day=factor(data$day)
+
+# 2.
+
+X <- split(data, data$day)
+data2 <- X$Weekday
+data3 <- X$Weekend
+average <- tapply(data2$steps, data2$interval, mean)
+names<-names(average)
+plot(names, average, xlab="5 minute intervals", ylab="average number of steps taken", type="l")
+average <- tapply(data3$steps, data3$interval, mean)
+names<-names(average)
+plot(names, average, xlab="5 minute intervals", ylab="average number of steps taken", type="l")
